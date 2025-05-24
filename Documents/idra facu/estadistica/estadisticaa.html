@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Estudiantes</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+  body {
+    padding: 20px;
+    background-color: #FCE4EC;
+    color: #1E3859;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  h2, h5 {
+    color: #1E3859;
+  }
+
+  .nav-tabs .nav-link.active {
+    background-color: #7673D9;
+    color: white;
+  }
+
+  .nav-tabs .nav-link {
+    color: #1E3859;
+  }
+
+  .tab-content {
+    background-color: #F8F1F6;
+    border: 1px solid #B3B6F2;
+    padding: 20px;
+  }
+
+  table.table {
+    margin-top: 20px;
+    border-collapse: collapse;
+    width: 100%;
+    background-color: #F9DCEB; 
+  }
+
+  table.table thead {
+    background-color: #9C99F2;
+    color: white;
+    font-weight: bold;
+  }
+
+  table.table tbody tr:nth-child(odd) {
+    background-color: #FCEAF3;
+  }
+
+  table.table tbody tr:nth-child(even) {
+    background-color: #F9DCEB;
+  }
+
+  th, td {
+    text-align: center;
+    padding: 10px;
+    border: 1px solid #D8E6F2;
+  }
+
+  .nav-tabs .nav-link:hover {
+    background-color: #B3B6F2;
+    color: white;
+  }
+</style>
+
+</head>
+<body>
+
+<div class="container">
+  <h2>Datos de los estudiantes</h2>
+
+  <!--  TABS 
+    Usar esto es una forma clara y organizada de presentar diferentes secciones de información. -->
+  <ul class="nav nav-tabs">
+    <li class="nav-item">
+      <a class="nav-link active" data-bs-toggle="tab" href="#todos">Población</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-bs-toggle="tab" href="#frecuencia">Frecuencias</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-bs-toggle="tab" href="#estadisticas">Estadísticos</a>
+    </li>
+  </ul>
+
+  <!-- Es la caja principal donde se muestra el contenido de cada pestaña.-->
+  <div class="tab-content">
+
+    <!-- POBLACION es el conjunto total de estudiantes encuestados. -->
+    <div class="tab-pane fade show active" id="todos">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Edad</th>
+            <th>Curso</th>
+            <th>Nivel</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-estudiantes"></tbody>
+      </table>
+    </div>
+
+    <!-- FRECUENCIAS (tablas de frecuencias de las variables de nivel y curso ) -->
+    <div class="tab-pane fade" id="frecuencia">
+
+      <h5>Frecuencia por Nivel</h5>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Nivel</th>
+            <th>Frecuencia Abosuluta</th> <!-- Es la cantidad de veces que aparece un valor. -->
+            <th>Frecuencia Acumulada</th> <!-- La frecuencia acumulada es la suma de las frecuencias absolutas hasta cierto punto de la tabla.-->
+            <th>Frecuencia Relativa</th>   <!-- La frecuencia relativa es la proporción de veces que aparece un valor respecto al total de datos.-->
+          </tr>
+        </thead>
+        <tbody id="frecuencia-nivel"></tbody>
+      </table>
+
+      <h5>Frecuencia por Curso</h5>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Nivel</th>
+            <th>Frecuencia Abosuluta</th> <!-- Es la cantidad de veces que aparece un valor. -->
+            <th>Frecuencia Acumulada</th> <!-- La frecuencia acumulada es la suma de las frecuencias absolutas hasta cierto punto de la tabla.-->
+            <th>Frecuencia Relativa</th>   <!-- La frecuencia relativa es la proporción de veces que aparece un valor respecto al total de datos.-->
+          </tr>
+        </thead>
+        <tbody id="frecuencia-curso"></tbody>
+      </table>
+
+    </div>
+
+  <!-- ESTADÍSTICOS: son números que nos dan información resumida sobre los datos.  -->
+    <div class="tab-pane fade" id="estadisticas">
+      <h5>Estadísticas de Edad</h5>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Tipo</th>
+            <th>Valor</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-estadisticos"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div> <!-- FIN DE LA CAJA PRINCIPAL-->
+<!-- ACA TERMINA LA PARTE DE HTML -->
+
+<!-- ACA COMIENZA LA PARTE DE JAVA SCRIPT -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  fetch("https://apidemo.geoeducacion.com.ar/api/testing/encuesta/1")
+    .then(r => r.json())
+    .then(data => {
+      let estudiantes = data.data;
+
+      // Mostrar estudiantes
+      estudiantes.forEach(est => {
+        document.getElementById("tabla-estudiantes").innerHTML += `
+          <tr>
+            <td>${est.nombre} ${est.apellido}</td>
+            <td>${est.Edad}</td>
+            <td>${est.curso}</td>
+            <td>${est.nivel}</td>
+          </tr>
+        `;
+      });
+
+      // Calcula tabla frecuencia por NIVEL y CURSO
+      let niveles = {};
+      estudiantes.forEach(e => {
+        niveles[e.nivel] = (niveles[e.nivel] || 0) + 1;
+      });
+
+      let total = estudiantes.length;
+      let acumuladaNivel = 0;
+
+      for (let nivel in niveles) {
+        let frecuenciaRelativa = (niveles[nivel] / total * 100).toFixed(2);
+        acumuladaNivel += niveles[nivel];
+        document.getElementById("frecuencia-nivel").innerHTML += `
+          <tr>
+            <td>${nivel}</td>
+            <td>${niveles[nivel]}</td>
+            <td>${acumuladaNivel}</td>
+            <td>${frecuenciaRelativa} %</td>
+          </tr>
+        `;
+      }
+
+      let cursos = {};
+      estudiantes.forEach(e => {
+      cursos[e.curso] = (cursos[e.curso] || 0) + 1;
+    });
+
+      let acumuladaCurso = 0;
+      for (let curso in cursos) {
+      let frecuenciaRelativa = (cursos[curso] / total * 100).toFixed(2);
+      acumuladaCurso += cursos[curso];
+      document.getElementById("frecuencia-curso").innerHTML += `
+          <tr>
+            <td>${curso}</td>
+            <td>${cursos[curso]}</td>
+            <td>${acumuladaCurso}</td>
+            <td>${frecuenciaRelativa} %</td>
+
+          </tr>
+        `;
+      } 
+
+      // funcion para calcular Estadisticos
+      let edades = estudiantes.map(e => e.Edad).sort((a, b) => a - b); //funcion para ordenar las edades de menor a mayor
+      let n = edades.length;
+      let suma = edades.reduce((a, b) => a + b, 0);
+      let media = (suma / n).toFixed(2);
+      let mediana = n % 2 === 0 ? ((edades[n/2 - 1] + edades[n/2]) / 2).toFixed(2) : edades[Math.floor(n/2)].toFixed(2); //segundo cuartil
+      let minimo = edades[0];
+      let maximo = edades[n - 1];
+      let q1 = ((p = (edades.length - 1) * 0.25, b = Math.floor(p), r = p - b, edades[b] + r * (edades[b + 1] - edades[b]))).toFixed(2); //primer cuartil
+      let q2 = mediana; //segundo cuartil
+      let desvio = Math.sqrt(edades.reduce((acc, edad) => acc + Math.pow(edad - parseFloat(media), 2), 0) / n).toFixed(2); //desviacion estandar
+
+      let resultados = [
+        ["Media", media],
+        ["Mediana", mediana],
+        ["Mínimo", minimo],
+        ["Máximo", maximo],
+        ["Primer Cuartil", q1],
+        ["Segundo Cuartil", q2],
+        ["Desviacion Estandar", desvio]
+      ];
+
+      // Muestra estadísticos
+      resultados.forEach(([tipo, valor]) => {
+        document.getElementById("tabla-estadisticos").innerHTML += `
+          <tr>
+            <td>${tipo}</td>
+            <td>${valor}</td>
+          </tr>
+        `;
+      });
+
+    });
+</script>
+
+</body>
+</html>
